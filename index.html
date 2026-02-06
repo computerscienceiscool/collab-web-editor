@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collaborative Text Editor</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- User Activity Log Sidebar -->
+  <div id="user-log" style="display: none;">
+    <div class="drag-handle" id="log-drag-handle">
+      <span>User Activity</span>
+      <span style="font-size: 12px; color: #5f6368;">Click & Drag</span>
+      </div>
+    <div id="log-entries"></div>
+  </div>
+  <div id="offline-banner" class="offline-banner hidden">
+    OFFLINE MODE – Changes will be saved when reconnected.
+  </div>
+
+  <!-- Menu Bar -->
+  <div class="menu-bar" role="menubar" aria-label="Main menu">
+    <input type="text" class="document-title" value="Untitled Document" id="document-title" aria-label="Document title">
+
+    <div class="menu-items">
+      <!-- File Menu -->
+      <div class="menu-item" role="none">
+        <button class="menu-button" data-menu="file" role="menuitem" aria-haspopup="true" aria-expanded="false">File</button>
+        <div class="dropdown-menu" id="file-menu" role="menu" aria-label="File menu">
+          <div class="dropdown-item" data-action="new">New Document <span class="keyboard-shortcut">Ctrl+N</span></div>
+          <div class="dropdown-item has-submenu" data-action="open-recent">
+            Open Recent
+            <span class="submenu-arrow">&#9656;</span>
+            <div class="submenu" id="recent-docs-menu" role="menu">
+              <div class="submenu-placeholder">No recent documents</div>
+            </div>
+          </div>
+          <div class="dropdown-item" data-action="make-copy">Make a copy</div>
+          <div class="dropdown-item" data-action="save-txt">Download as Text (.txt)</div>
+          <div class="dropdown-item" data-action="save-md">Download as Markdown (.md)</div>
+          <div class="dropdown-item" data-action="save-json">Download as CodeMirror State (.json)</div>
+          <div class="dropdown-item" data-action="save-cbor">Download as CBOR (.cbor)</div>
+          <div class="dropdown-item" data-action="save-promisegrid">Download as PromiseGrid CBOR</div>
+          <div class="dropdown-item" data-action="save-automerge">Download as Automerge (.automerge)</div>
+          <div class="dropdown-item" data-action="save-html">Download as HTML (.html)</div>
+          <div class="dropdown-item" data-action="share">Share</div>
+          <div class="dropdown-item" data-action="email">Email</div>
+          <div class="dropdown-item" data-action="copy-url">Copy Document URL</div>
+          <div class="dropdown-item" data-action="print">Print <span class="keyboard-shortcut">Ctrl+P</span></div>
+          <div class="menu-section">
+            <div class="dropdown-item" data-action="rename">Rename</div>
+            <div class="dropdown-item" data-action="version-history">Version history</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Menu -->
+      <div class="menu-item" role="none">
+        <button class="menu-button" data-menu="edit" role="menuitem" aria-haspopup="true" aria-expanded="false">Edit</button>
+      <div class="dropdown-menu" id="edit-menu" role="menu" aria-label="Edit menu">
+      <div class="dropdown-item" data-action="undo">Undo <span class="keyboard-shortcut">Ctrl+Z</span></div>
+      <div class="dropdown-item" data-action="redo">Redo <span class="keyboard-shortcut">Ctrl+Y</span></div>
+      <div class="menu-section">
+        <div class="dropdown-item" data-action="cut">Cut <span class="keyboard-shortcut">Ctrl+X</span></div>
+        <div class="dropdown-item" data-action="copy">Copy <span class="keyboard-shortcut">Ctrl+C</span></div>
+        <div class="dropdown-item" data-action="paste">Paste <span class="keyboard-shortcut">Ctrl+V</span></div>
+    </div>
+    <div class="menu-section">
+      <div class="dropdown-item" data-action="select-all">Select all <span class="keyboard-shortcut">Ctrl+A</span></div>
+      <div class="dropdown-item" data-action="delete">Delete</div>
+    </div>
+    <div class="menu-section">
+        <div class="dropdown-item" data-action="find">Find <span class="keyboard-shortcut">Ctrl+F</span></div>
+          </div>
+        </div>
+      </div> 
+      <!-- Format Menu -->
+      <div class="menu-item" role="none">
+        <button class="menu-button" data-menu="format" role="menuitem" aria-haspopup="true" aria-expanded="false">Format</button>
+        <div class="dropdown-menu" id="format-menu" role="menu" aria-label="Format menu">
+          <div class="dropdown-item" data-action="format-document">Format Document</div>
+          <div class="dropdown-item" data-action="bold">Bold <span class="keyboard-shortcut">Ctrl+B</span></div>
+          <div class="dropdown-item" data-action="italic">Italic <span class="keyboard-shortcut">Ctrl+I</span></div>
+          <div class="dropdown-item" data-action="underline">Underline <span class="keyboard-shortcut">Ctrl+U</span></div>
+          <div class="dropdown-item" data-action="strikethrough">Strikethrough</div>
+          <div class="dropdown-item" data-action="heading1">Heading 1</div>
+          <div class="dropdown-item" data-action="heading2">Heading 2</div>
+          <div class="dropdown-item" data-action="heading3">Heading 3</div>
+          <div class="dropdown-item" data-action="bullet-list">Bullet List</div>
+          <div class="dropdown-item" data-action="numbered-list">Numbered List</div>
+          <div class="dropdown-item" data-action="link">Insert Link</div>
+        </div>
+      </div>
+
+      <!-- Tools Menu -->
+      <div class="menu-item" role="none">
+        <button class="menu-button" data-menu="tools" role="menuitem" aria-haspopup="true" aria-expanded="false">Tools</button>
+        <div class="dropdown-menu" id="tools-menu" role="menu" aria-label="Tools menu">
+            <div class="dropdown-item" data-action="word-count">Word count <span class="keyboard-shortcut">Ctrl+Shift+C</span></div>
+            <div class="dropdown-item" data-action="line-numbers">Toggle line numbers</div>
+            <div class="menu-section">
+              <div class="dropdown-item" data-action="document-stats">Document Statistics</div>
+              <div class="dropdown-item" data-action="promisegrid-test">Test PromiseGrid Message</div>
+            </div>
+            <div class="menu-section">
+              <div class="dropdown-item" data-action="notification-settings">Notification settings</div>
+              <div class="dropdown-item" data-action="keyboard-shortcuts">Keyboard Shortcuts</div>
+              <div class="dropdown-item" data-action="accessibility">Accessibility</div>
+            </div>
+          </div>
+        </div>
+
+
+      <!-- View Menu -->
+      <div class="menu-item" role="none">
+        <button class="menu-button" data-menu="view" role="menuitem" aria-haspopup="true" aria-expanded="false">View</button>
+        <div class="dropdown-menu" id="view-menu" role="menu" aria-label="View menu">
+          <div class="dropdown-item" data-action="toggle-log">Toggle Activity Log</div>
+          <div class="dropdown-item" data-action="toggle-toolbar">Toggle Toolbar</div>
+          <div class="dropdown-item" data-action="toggle-markdown-preview">Toggle Markdown Preview <span class="keyboard-shortcut">Ctrl+M</span></div>
+          <div class="dropdown-item" data-action="view-diffs">View Diffs</div>
+          <div class="dropdown-item" data-action="update-markdown-preview">Update Preview <span class="keyboard-shortcut">Ctrl+R</span></div>
+        </div>
+      </div>
+
+      <!-- Help Menu -->
+      <div class="menu-item" role="none">
+        <button class="menu-button" data-menu="help" role="menuitem" aria-haspopup="true" aria-expanded="false">Help</button>
+        <div class="dropdown-menu" id="help-menu" role="menu" aria-label="Help menu">
+          <div class="dropdown-item" data-action="about">About</div>
+          <div class="dropdown-item" data-action="promisegrid-info">PromiseGrid Integration</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar" id="toolbar" role="toolbar" aria-label="Formatting toolbar">
+    <div class="toolbar-group" role="group" aria-label="Text formatting">
+      <button class="toolbar-button" id="bold-button" title="Bold (Ctrl+B)" aria-label="Bold"><strong>B</strong></button>
+      <button class="toolbar-button" id="italic-button" title="Italic (Ctrl+I)" aria-label="Italic"><em>I</em></button>
+      <button class="toolbar-button" id="underline-button" title="Underline (Ctrl+U)" aria-label="Underline"><u>U</u></button>
+      <button class="toolbar-button" id="strike-button" title="Strikethrough" aria-label="Strikethrough"><s>S</s></button>
+      
+      <div style="border-left: 1px solid #dadce0; height: 24px; margin: 0 4px;"></div>
+      
+      <button class="toolbar-button" id="heading1-button" title="Heading 1" aria-label="Heading level 1">H1</button>
+      <button class="toolbar-button" id="heading2-button" title="Heading 2" aria-label="Heading level 2">H2</button>
+      <button class="toolbar-button" id="heading3-button" title="Heading 3" aria-label="Heading level 3">H3</button>
+
+      <div style="border-left: 1px solid #dadce0; height: 24px; margin: 0 4px;" role="separator"></div>
+
+      <button class="toolbar-button" id="bullet-button" title="Bullet List" aria-label="Bullet list">•</button>
+      <button class="toolbar-button" id="numbered-button" title="Numbered List" aria-label="Numbered list">1.</button>
+      <button class="toolbar-button" id="link-button" title="Insert Link" aria-label="Insert link">🔗</button>
+
+      <div style="border-left: 1px solid #dadce0; height: 24px; margin: 0 4px;" role="separator"></div>
+
+      <button class="toolbar-button" id="undo-button" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+      <button class="toolbar-button" id="redo-button" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+      <button class="toolbar-button" id="format-button" title="Format Document" aria-label="Format document">⚡</button>
+    </div>
+
+    <div class="toolbar-group" role="search" aria-label="Document search">
+      <input type="text" id="search-input" class="search-box" placeholder="Search document..." aria-label="Search document">
+      <button class="toolbar-button" id="search-button" aria-label="Search">🔍</button>
+      <button class="toolbar-button" id="clear-search" aria-label="Clear search">✕</button>
+    </div>
+  </div>
+
+  <!-- User Settings -->
+  <div class="user-settings" role="region" aria-label="User settings" style="overflow: visible;">
+    <label for="name-input" style="flex-shrink: 0;">Name:</label>
+    <input type="text" id="name-input" placeholder="Your name" aria-label="Your display name" style="min-width: 80px; flex-shrink: 1;" />
+
+    <label for="color-input" style="flex-shrink: 0;">Color:</label>
+    <input type="color" id="color-input" aria-label="Your cursor color" />
+    <button class="toolbar-button" id="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode" style="margin-left: 8px; flex-shrink: 0;">🌙</button>
+    <div style="margin-left: auto; flex-shrink: 0; white-space: nowrap; overflow: visible;">
+      Doc: <strong id="document-name" aria-label="Document ID" title="Click to copy share URL" style="cursor: pointer;">?</strong>
+    </div>
+
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar" role="status" aria-label="Document status">
+    <div class="status-group">
+      <span id="document-stats">
+        <span id="word-count">0 words</span> • 
+        <span id="char-count">0 chars</span> • 
+        <span id="reading-time">1 min read</span>
+      </span>
+      <span id="last-saved" aria-live="polite">Saved just now</span>
+      <span id="typing-indicator"></span>
+    </div>
+    
+    <div class="status-group">
+      <span id="connection-status" class="status-pill online" aria-live="polite" title="Connection status">Online</span>
+      <span>Users: <span id="user-count">0</span></span>
+      <div id="user-list"></div>
+    </div>
+  </div>
+
+  <!-- Hidden elements for compatibility -->
+  <div style="display: none;">
+    <select id="save-format">
+      <option value="txt">Export as .txt</option>
+      <option value="md">Export as .md (Markdown)</option>
+      <option value="json">Export Codemirror State</option>
+      <option value="cbor">Save as .cbor</option>
+      <option value="promisegrid">PromiseGrid CBOR (.cbor)</option>
+      <option value="automerge">Export Automerge (.automerge)</option>
+      <option value="html">Export as .html</option>
+    </select>
+    <button id="save-button">Save</button>
+    <button id="toggle-log">Log</button>
+  </div>
+
+  <!-- Editor -->
+  <div class="editor-container">
+    <div id="editor" aria-label="Document editor"></div>
+    <div id="markdown-preview" class="markdown-preview" aria-label="Markdown preview" aria-live="polite"></div>
+  </div>
+    <!-- Menu System Script -->
+    <script type="module">
+    // Import the shortcut manager
+    import { shortcutManager } from './src/ui/shortcutManager.js';
+    import { preferencesDialog } from './src/ui/preferencesDialog.js';
+    import { getRecentDocuments, formatShortId, formatRelativeTime } from './src/utils/documentRegistry.js';
+
+    // Make them available globally so MenuSystem can use them
+    window.shortcutManager = shortcutManager;
+    window.preferencesDialog = preferencesDialog;
+    window.documentRegistry = { getRecentDocuments, formatShortId, formatRelativeTime };
+
+    // Initialize preferences dialog on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!window.preferencesDialog.isInitialized) {
+        window.preferencesDialog.isInitialized = true;
+      }
+    });
+
+    // Menu System Class
+        class MenuSystem {
+          constructor() {
+            this.activeMenu = null;
+            this.init();
+          }
+
+
+          init() {
+            this.setupMenuToggling();
+            this.setupMenuActions();
+            this.setupKeyboardShortcuts();
+            this.setupClickOutside();
+            this.setupOrientationHandler();
+            this.setupRecentDocsMenu();
+          }
+
+          setupRecentDocsMenu() {
+            const recentMenuItem = document.querySelector('[data-action="open-recent"]');
+            if (!recentMenuItem) return;
+
+            // Populate submenu when hovering over "Open Recent"
+            recentMenuItem.addEventListener('mouseenter', () => {
+              this.populateRecentDocsMenu();
+            });
+
+            // Also populate when the File menu opens
+            const fileMenuButton = document.querySelector('[data-menu="file"]');
+            if (fileMenuButton) {
+              fileMenuButton.addEventListener('click', () => {
+                setTimeout(() => this.populateRecentDocsMenu(), 0);
+              });
+            }
+          }
+
+          populateRecentDocsMenu() {
+            const submenu = document.getElementById('recent-docs-menu');
+            if (!submenu || !window.documentRegistry) return;
+
+            const { getRecentDocuments, formatShortId, formatRelativeTime } = window.documentRegistry;
+            const docs = getRecentDocuments(10);
+
+            // Get current document ID to exclude it from the list
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentDocId = urlParams.get('doc');
+
+            // Filter out current document
+            const otherDocs = docs.filter(d => d.id !== currentDocId);
+
+            if (otherDocs.length === 0) {
+              submenu.innerHTML = '<div class="submenu-placeholder">No recent documents</div>';
+              return;
+            }
+
+            submenu.innerHTML = otherDocs.map(doc => `
+              <div class="submenu-item" data-doc-id="${doc.id}" title="${doc.id}">
+                <div class="submenu-item-title">${this.escapeHtml(doc.title)}</div>
+                <div class="submenu-item-meta">
+                  <span class="submenu-item-id">${formatShortId(doc.id)}</span>
+                  <span class="submenu-item-time">${formatRelativeTime(doc.lastOpened)}</span>
+                </div>
+              </div>
+            `).join('');
+
+            // Add click handlers for each document
+            submenu.querySelectorAll('.submenu-item').forEach(item => {
+              item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const docId = item.dataset.docId;
+                if (docId) {
+                  this.openDocument(docId);
+                }
+              });
+            });
+          }
+
+          escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+          }
+
+          openDocument(docId) {
+            this.closeAllMenus();
+            const url = `${window.location.origin}${window.location.pathname}?doc=${encodeURIComponent(docId)}`;
+            window.location.href = url;
+          }
+
+          // Close menus on orientation change / resize
+          setupOrientationHandler() {
+            // Close menus on resize (includes orientation change)
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+              // Debounce to avoid multiple calls during resize
+              clearTimeout(resizeTimeout);
+              resizeTimeout = setTimeout(() => {
+                if (this.activeMenu) {
+                  this.closeAllMenus();
+                  console.log('Menus closed due to viewport resize/rotation');
+                }
+              }, 100);
+            });
+            
+            // Also listen for orientation change event specifically
+            window.addEventListener('orientationchange', () => {
+              this.closeAllMenus();
+              console.log('Menus closed due to orientation change');
+            });
+          }
+
+      setupMenuToggling() {
+        const menuButtons = document.querySelectorAll('[data-menu]');
+        
+        menuButtons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const menuName = button.dataset.menu;
+            this.toggleMenu(menuName, button);
+          });
+        });
+      }
+
+      toggleMenu(menuName, button) {
+        const menu = document.getElementById(`${menuName}-menu`);
+        const isCurrentlyActive = this.activeMenu === menuName;
+
+        this.closeAllMenus();
+
+        if (!isCurrentlyActive) {
+          menu.classList.add('show');
+          button.classList.add('active');
+          this.activeMenu = menuName;
+        }
+      }
+
+async getLastSavedVersion() {
+  const docName = document.getElementById('document-name').textContent;
+  return await window.getLatestVersionFromIndexedDB(docName);
+}
+
+async handleViewDiffs() {
+  console.log('handleViewDiffs called');
+  const view = window.editorView;
+  if (!view) {
+    alert('Editor not available');
+    return;
+  }
+  
+  // Check if Go WASM is loaded
+  if (typeof window.generateSideBySideDiff !== 'function') {
+    alert('Diff viewer not available. Run: make grokker-wasm');
+    return;
+  }
+
+  console.log('Getting current and previous versions...');
+  const current = view.state.doc.toString();
+  
+  try {
+    const previous = await this.getLastSavedVersion(); 
+    console.log('Previous version:', previous);
+    console.log('Current version:', current);
+    
+    // Create simple diff modal
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay show';
+    modal.innerHTML = `
+      <div class="modal-dialog" style="max-width:90%; width:1000px;">
+        <div class="modal-header">
+          <h2>Document Differences</h2>
+          <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-content">
+          <div id="diff-output"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-button">Close</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Generate diff
+    const diffHtml = window.generateSideBySideDiff(previous, current, "Previous", "Current");
+    document.getElementById('diff-output').innerHTML = diffHtml;
+    
+    // Close handlers
+    modal.querySelector('.modal-close').onclick = () => modal.remove();
+    modal.querySelector('.modal-button').onclick = () => modal.remove();
+    modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    
+  } catch (error) {
+    console.error('Error getting previous version:', error);
+    alert('Error: ' + error.message);
+  }
+}
+
+
+
+      closeAllMenus() {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+          menu.classList.remove('show');
+        });
+        document.querySelectorAll('.menu-button').forEach(button => {
+          button.classList.remove('active');
+        });
+        this.activeMenu = null;
+      }
+
+      setupClickOutside() {
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.menu-item')) {
+            this.closeAllMenus();
+          }
+        });
+      }
+
+      setupMenuActions() {
+        document.addEventListener('click', (e) => {
+          const action = e.target.dataset.action;
+          if (action) {
+            e.preventDefault();
+            this.closeAllMenus();
+            this.handleAction(action);
+          }
+        });
+      }
+
+      handleAction(action) {
+        switch (action) {
+          case 'new':
+            if (confirm('Create a new document? This will generate a new document URL.')) {
+              window.location.href = window.location.origin + window.location.pathname;
+            }
+            break;
+          case 'save-txt':
+          case 'save-md':
+          case 'save-json':
+          case 'save-cbor':
+          case 'save-promisegrid':
+          case 'save-automerge':
+          case 'save-html':
+              this.triggerSave(action.replace('save-', ''));
+              break;
+          case 'keyboard-shortcuts':
+            if (window.preferencesDialog) {
+              window.preferencesDialog.show();
+            }
+            break;
+          case 'copy-url':
+            navigator.clipboard.writeText(window.location.href).then(() => {
+              alert('Document URL copied to clipboard!');
+            });
+            break;
+          case 'undo':
+            document.getElementById('undo-button')?.click();
+            break;
+          case 'redo':
+            document.getElementById('redo-button')?.click();
+            break;
+          case 'find':
+            document.getElementById('search-input')?.focus();
+            break;
+          case 'format-document':
+            document.getElementById('format-button')?.click();
+            break;
+          case 'bold':
+            document.getElementById('bold-button')?.click();
+            break;
+          case 'italic':
+            document.getElementById('italic-button')?.click();
+            break;
+          case 'underline':
+            document.getElementById('underline-button')?.click();
+            break;
+          case 'strikethrough':
+            document.getElementById('strike-button')?.click();
+            break;
+          case 'heading1':
+            document.getElementById('heading1-button')?.click();
+            break;
+          case 'heading2':
+            document.getElementById('heading2-button')?.click();
+            break;
+          case 'heading3':
+            document.getElementById('heading3-button')?.click();
+            break;
+          case 'bullet-list':
+            document.getElementById('bullet-button')?.click();
+            break;
+          case 'numbered-list':
+            document.getElementById('numbered-button')?.click();
+            break;
+          case 'link':
+            document.getElementById('link-button')?.click();
+            break;
+          case 'print':
+            window.print();
+            break;
+          case 'view-diffs':
+            this.handleViewDiffs();
+            break; 
+          case 'make-copy':
+            this.makeCopy();
+            break;
+
+          case 'share':
+            this.shareDocument();
+            break;
+
+          case 'rename':
+            this.renameDocument();
+            break;
+  
+          case 'version-history':
+            this.showVersionHistory();
+            break;
+  
+          case 'email':
+            this.emailDocument();
+            break;
+          case 'document-stats':
+            const wordCount = document.getElementById('word-count').textContent;
+            const charCount = document.getElementById('char-count').textContent;
+            const readingTime = document.getElementById('reading-time').textContent;
+            alert(`Document Statistics:\n• ${wordCount}\n• ${charCount}\n• ${readingTime}`);
+            break;
+          case 'select-all':
+            this.selectAll();
+            break;
+  
+          case 'delete':
+            this.deleteSelection();
+            break;
+
+          case 'copy':
+            this.copySelection();
+            break;
+  
+          case 'cut':
+            this.cutSelection();
+            break;
+  
+          case 'paste':
+            this.pasteText();
+            break;
+          case 'word-count':
+            this.showWordCount();
+            break;
+          case 'line-numbers':
+            this.toggleLineNumbers();
+            break;
+
+          case 'notification-settings':
+            this.showNotificationSettings();
+            break;
+          
+          case 'accessibility':
+              showAccessibilityModal();
+              break;
+          case 'preferences':
+             if (window.preferencesDialog) {
+               window.preferencesDialog.show();
+             } else {
+              alert('Preferences dialog not available');
+             }
+             break;
+
+          case 'promisegrid-test':
+            if (window.createPromiseGridMessage) {
+              try {
+                const message = window.createPromiseGridMessage("test-doc", "menu-test", 0, "Test message from menu", "user");
+                console.log('PromiseGrid test message created:', message);
+                alert('PromiseGrid test message created! Check console for details.');
+              } catch (error) {
+                alert('PromiseGrid test failed: ' + error.message);
+              }
+            } else {
+              alert('PromiseGrid functionality not available. Make sure WASM is loaded.');
+            }
+            break;
+          case 'toggle-log':
+            this.toggleActivityLog();
+            break;
+          case 'toggle-toolbar':
+            const toolbar = document.getElementById('toolbar');
+            toolbar.classList.toggle('hidden');
+            break;
+          case 'toggle-markdown-preview':
+            this.toggleMarkdownPreview();
+            break;
+          case 'update-markdown-preview':
+            this.updateMarkdownPreview();
+            break;
+          case 'about':
+            showAboutModal();
+            break;
+
+          case 'promisegrid-info':
+            showPromiseGridModal();
+            break;
+
+
+          default:
+            console.log('Unknown action:', action);
+        }
+      }
+
+      triggerSave(format) {
+        const saveFormat = document.getElementById('save-format');
+        const saveButton = document.getElementById('save-button');
+        if (saveFormat && saveButton) {
+          saveFormat.value = format;
+          saveButton.click();
+        }
+      }
+
+    setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+      // Don't handle shortcuts if preferences dialog is open
+        if (window.preferencesDialog && window.preferencesDialog.isOpen) {
+            return;
+        }
+        if (window.shortcutManager && !window.shortcutManager.isEnabled()) {
+            return; // Exit early if shortcuts are disabled
+        }
+
+
+
+        if (e.ctrlKey || e.metaKey) {
+          console.log('Ctrl/Meta key detected with', e);
+          switch (e.key.toLowerCase()) {
+            case 'n':
+              e.preventDefault();
+              this.handleAction('new');
+              break;
+            case 'f':
+              e.preventDefault();
+              document.getElementById('search-input')?.focus();
+              break;
+            case 'b':
+              if (!e.target.matches('input, textarea')) {
+                e.preventDefault();
+                document.getElementById('bold-button')?.click();
+              }
+              break;
+            case 'i':
+              if (!e.target.matches('input, textarea')) {
+                e.preventDefault();
+                document.getElementById('italic-button')?.click();
+              }
+              break;
+            case 'p':
+              e.preventDefault();
+              window.print();
+              break;      
+            case 'a':
+              if (!e.target.matches('input, textarea, [contenteditable]')) {
+                e.preventDefault();
+                this.selectAll();
+              }
+              break;
+            case 'c':
+              if (e.shiftKey) {
+                // Ctrl+Shift+C = Word count
+                e.preventDefault();
+                this.showWordCount();
+              } else if (!e.target.matches('input, textarea, [contenteditable]')) {
+                // Ctrl+C = Copy (only in editor, not in input fields)
+                e.preventDefault();
+                this.copySelection();
+              }
+              break;  
+            case 'x':
+              if (!e.target.matches('input, textarea, [contenteditable]')) {
+                e.preventDefault();
+                this.cutSelection();
+              }
+              break;
+            case 'v':
+              if (!e.target.matches('input, textarea, [contenteditable]')) {
+                e.preventDefault();
+                this.pasteText();
+              }
+              break;
+            case 'm':
+              if (!e.target.matches('input, textarea, [contenteditable]')) {
+                e.preventDefault();
+                this.toggleMarkdownPreview();
+              }
+              break;
+            case 'r':
+              if (!e.target.matches('input, textarea, [contenteditable]') && this.isPreviewActive) {
+                e.preventDefault();
+                this.updateMarkdownPreview();
+              }
+              break;  
+            case 'u':
+              if (!e.target.matches('input, textarea')) {
+                e.preventDefault();
+                document.getElementById('underline-button')?.click();
+              }
+              break;
+            case 'y': {
+              // Ctrl+Alt+Y (or ⌘+Alt+Y) toggles the toolbar
+              if ((e.ctrlKey || e.metaKey) && e.altKey && !e.target.matches('input, textarea, [contenteditable]')) {
+                e.preventDefault();
+                const toolbar = document.getElementById('toolbar');
+                if (toolbar) {
+                  toolbar.classList.toggle('hidden');
+                }
+              }
+              break;
+            }
+                
+            
+          }
+        }
+        
+        if (e.key === 'Escape') {
+          this.closeAllMenus();
+        }
+      });
+    }
+
+
+
+       
+
+    makeCopy() {
+      const view = this.getEditorView();
+      if (!view) {
+        alert('Editor not available. Please try again.');
+        return;
+      }
+
+      try {
+        // Get the complete document text (preserves line breaks and formatting)
+        const currentContent = view.state.doc.toString();
+        
+        // Get document title for the new copy
+        const currentTitle = document.getElementById('document-title').value || 'Untitled Document';
+        const copyTitle = currentTitle + ' (Copy)';
+        
+        // Create copy data object
+        const copyData = {
+          content: currentContent,
+          title: copyTitle,
+          timestamp: Date.now(),
+          originalLength: currentContent.length,
+          lineCount: (currentContent.match(/\n/g) || []).length + 1
+        };
+        
+        console.log('Creating document copy:');
+        console.log('Original title:', currentTitle);
+        console.log('Content length:', copyData.originalLength, 'characters');
+        console.log('Line count:', copyData.lineCount);
+        
+        // Store in sessionStorage for transfer (will be cleaned up after use)
+        sessionStorage.setItem('documentCopyData', JSON.stringify(copyData));
+        
+        // Generate new document URL
+        const newUrl = window.location.origin + window.location.pathname;
+        
+        // Open new window
+        const newWindow = window.open(newUrl, '_blank');
+        
+        if (newWindow) {
+          console.log('Copy window opened successfully');
+          alert(`Copy created in new tab!\n\nTitle: ${copyTitle}\nContent: ${copyData.originalLength} characters, ${copyData.lineCount} lines`);
+        } else {
+          // Fallback if popup was blocked
+          console.log('Popup blocked');
+          alert('Popup blocked. Please allow popups and try again, or manually open: ' + newUrl);
+          // Clean up the stored data
+          sessionStorage.removeItem('documentCopyData');
+        }
+        
+      } catch (error) {
+        console.error('Failed to create copy:', error);
+        alert('Failed to create copy: ' + error.message);
+      }
+    }
+
+        shareDocument() {
+          const url = window.location.href;
+          const title = document.getElementById('document-title').value || 'Collaborative Document';
+          
+          if (navigator.share) {
+            navigator.share({
+              title: title,
+              text: `Collaborate with me on "${title}"`,
+              url: url
+            });
+          } else {
+            // Fallback: copy to clipboard and show share options
+            navigator.clipboard.writeText(url).then(() => {
+              const shareText = `Share this document:\n\n${title}\n${url}\n\nLink copied to clipboard!`;
+              alert(shareText);
+            });
+          }
+        }
+
+        renameDocument() {
+          const titleInput = document.getElementById('document-title');
+          titleInput.focus();
+          titleInput.select();
+        }
+
+        showVersionHistory() {
+          const stats = document.getElementById('document-stats').textContent;
+          const docName = document.getElementById('document-name').textContent;
+          const userCount = document.getElementById('user-count').textContent;
+          
+          alert(`Document History:\n\nDocument: ${docName}\nCurrent stats: ${stats}\nActive users: ${userCount}\n\nNote: Full version history coming in future update!`);
+        }
+
+        emailDocument() {
+          const title = document.getElementById('document-title').value || 'Collaborative Document';
+          const url = window.location.href;
+          const content = document.querySelector('#editor .cm-content')?.textContent || '';
+          const preview = content.substring(0, 200) + (content.length > 200 ? '...' : '');
+          
+          const subject = encodeURIComponent(`Collaborative Document: ${title}`);
+          const body = encodeURIComponent(`Hi!\n\nI'd like to share this collaborative document with you:\n\n"${title}"\n\nPreview:\n${preview}\n\nClick here to view and edit: ${url}\n\nBest regards`);
+          
+          window.open(`mailto:?subject=${subject}&body=${body}`);
+        }
+
+        generateUUID() {
+          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
+        }
+        // Markdown Preview Methods
+        toggleMarkdownPreview() {
+          const container = document.querySelector('.editor-container');
+          const preview = document.getElementById('markdown-preview');
+          
+          if (container.classList.contains('split-view')) {
+            container.classList.remove('split-view');
+            this.isPreviewActive = false;
+            console.log('Markdown preview hidden');
+          } else {
+            container.classList.add('split-view');
+            this.isPreviewActive = true;
+            this.updateMarkdownPreview();
+            console.log('Markdown preview shown');
+          }
+        }
+
+        updateMarkdownPreview() {
+          if (!this.isPreviewActive) return;
+          
+          const view = this.getEditorView();
+          const preview = document.getElementById('markdown-preview');
+          
+          if (view && preview) {
+            const content = view.state.doc.toString();
+            const html = this.markdownToHtml(content);
+            preview.innerHTML = html;
+            console.log('Markdown preview updated');
+          }
+        }
+
+       markdownToHtml(markdown) {
+          let result = markdown;
+
+          // Fenced code blocks (must be first)
+          result = result.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+            const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `<pre><code class="language-${lang || 'text'}">${escaped}</code></pre>`;
+          });
+
+          // Tables - allow leading whitespace (use [ \t]* for body rows to stop at blank lines)
+          result = result.replace(/^[ \t]*(\|.+\|)[ \t]*\n[ \t]*(\|[-:| ]+\|)[ \t]*\n((?:[ \t]*\|.+\|[ \t]*\n?)+)/gm, (match, header, sep, body) => {
+            const headers = header.split('|').slice(1, -1).map(h => `<th>${h.trim()}</th>`).join('');
+            const rows = body.trim().split('\n').map(row => {
+              const cells = row.replace(/^\||\|$/g, '').split('|').map(c => `<td>${c.trim()}</td>`).join('');
+              return `<tr>${cells}</tr>`;
+            }).join('');
+            return `<table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+          });
+
+          // Blockquotes - allow leading whitespace
+          result = result.replace(/^\s*&gt; (.*$)/gim, '<blockquote>$1</blockquote>');
+          result = result.replace(/^\s*> (.*$)/gim, '<blockquote>$1</blockquote>');
+
+          // Horizontal rules - allow leading whitespace
+          result = result.replace(/^\s*[-*_]{3,}\s*$/gm, '<hr>');
+
+          // Headings (H6 to H1, longest match first) - allow leading whitespace
+          result = result
+            .replace(/^\s*###### (.+)$/gm, '<h6>$1</h6>')
+            .replace(/^\s*##### (.+)$/gm, '<h5>$1</h5>')
+            .replace(/^\s*#### (.+)$/gm, '<h4>$1</h4>')
+            .replace(/^\s*### (.+)$/gm, '<h3>$1</h3>')
+            .replace(/^\s*## (.+)$/gm, '<h2>$1</h2>')
+            .replace(/^\s*# (.+)$/gm, '<h1>$1</h1>');
+
+          // Task lists (before regular bullets)
+          result = result.replace(/^\s*[-*+] \[x\] (.*)$/gim, '<li class="task done"><input type="checkbox" checked disabled> $1</li>');
+          result = result.replace(/^\s*[-*+] \[ \] (.*)$/gim, '<li class="task"><input type="checkbox" disabled> $1</li>');
+          result = result.replace(/((?:<li class="task[^"]*">.*<\/li>\s*)+)/g, '<ul class="task-list">$1</ul>');
+
+          // Bold and italic (GFM compliant)
+          result = result
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/__(.*?)__/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/_(.*?)_/g, '<em>$1</em>')
+            .replace(/~~(.*?)~~/g, '<del>$1</del>');
+
+          // Inline code
+          result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+          // Bullet lists (-, *, +)
+          result = result.replace(/^\s*[-*+] (.+)$/gm, '<li>$1</li>');
+          result = result.replace(/((?:^<li>.*<\/li>\s*)+)/gm, '<ul>$1</ul>');
+
+          // Numbered lists
+          result = result.replace(/^\s*\d+\. (.+)$/gm, '<li class="num">$1</li>');
+          result = result.replace(/((?:^<li class="num">.*<\/li>\s*)+)/gm, '<ol>$1</ol>');
+
+          // Images (before links)
+          result = result.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%">');
+
+          // Links
+          result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+          // Line breaks (but not inside pre/code)
+          result = result.replace(/\n/g, '<br>');
+
+          return result;
+        }
+     
+        // Get the CodeMirror editor view
+    getEditorView() {
+      // This assumes your editor view is stored globally or accessible
+      // You might need to adjust this based on how your app.js sets up the editor
+      return window.editorView || document.querySelector('#editor')?._editorView;
+    }
+
+    selectAll() {
+      const view = this.getEditorView();
+      if (view) {
+        view.dispatch({
+          selection: { anchor: 0, head: view.state.doc.length }
+        });
+        console.log('Selected all text');
+      }
+    }
+
+    deleteSelection() {
+      const view = this.getEditorView();
+      if (view) {
+        const selection = view.state.selection.main;
+        if (!selection.empty) {
+          view.dispatch({
+            changes: { from: selection.from, to: selection.to, insert: '' }
+          });
+          console.log('Deleted selection');
+        } else {
+          // Delete character at cursor if nothing selected
+          const pos = selection.head;
+          if (pos < view.state.doc.length) {
+            view.dispatch({
+              changes: { from: pos, to: pos + 1, insert: '' }
+            });
+            console.log('Deleted character');
+          }
+        }
+      }
+    }
+
+    async copySelection() {
+      const view = this.getEditorView();
+      if (view) {
+        const selection = view.state.selection.main;
+        if (!selection.empty) {
+          const text = view.state.doc.sliceString(selection.from, selection.to);
+          try {
+            await navigator.clipboard.writeText(text);
+            console.log('Copied to clipboard:', text.substring(0, 50) + '...');
+          } catch (err) {
+            console.error('Failed to copy:', err);
+            alert('Copy failed. Browser may not support clipboard access.');
+          }
+        } else {
+          alert('No text selected to copy');
+        }
+      }
+    }
+
+    async cutSelection() {
+      const view = this.getEditorView();
+      if (view) {
+        const selection = view.state.selection.main;
+        if (!selection.empty) {
+          const text = view.state.doc.sliceString(selection.from, selection.to);
+          try {
+            await navigator.clipboard.writeText(text);
+            view.dispatch({
+              changes: { from: selection.from, to: selection.to, insert: '' }
+            });
+            console.log('Cut to clipboard:', text.substring(0, 50) + '...');
+          } catch (err) {
+            console.error('Failed to cut:', err);
+            alert('Cut failed. Browser may not support clipboard access.');
+          }
+        } else {
+          alert('No text selected to cut');
+        }
+      }
+    }
+
+    async pasteText() {
+      const view = this.getEditorView();
+      if (view) {
+        try {
+          const text = await navigator.clipboard.readText();
+          const selection = view.state.selection.main;
+          view.dispatch({
+            changes: { from: selection.from, to: selection.to, insert: text },
+            selection: { anchor: selection.from + text.length }
+          });
+          console.log('Pasted from clipboard:', text.substring(0, 50) + '...');
+        } catch (err) {
+          console.error('Failed to paste:', err);
+          alert('Paste failed. Browser may not support clipboard access or clipboard is empty.');
+        }
+      }
+     }
+      //////////////////
+      showWordCount() {
+      const wordCount = document.getElementById('word-count').textContent;
+      const charCount = document.getElementById('char-count').textContent;
+      const readingTime = document.getElementById('reading-time').textContent;
+      const docName = document.getElementById('document-name').textContent;
+      
+      alert(`Document Statistics:
+
+        Document: ${docName}
+        ${wordCount}
+        ${charCount}
+        ${readingTime}
+
+        Tip: Live stats are always visible in the status bar!`);
+        }
+        
+
+
+       toggleLineNumbers() {
+         console.log('=== MENU TOGGLE CALLED ===');
+         console.log('window.toggleLineNumbers exists?', typeof window.toggleLineNumbers);
+       
+         if (window.toggleLineNumbers) {
+           console.log('Calling window.toggleLineNumbers...');
+           const newState = window.toggleLineNumbers();
+           console.log('Toggle returned:', newState);
+           this.showNotification(newState ? 'Line numbers enabled' : 'Line numbers disabled');
+         } else {
+           console.error('ERROR: window.toggleLineNumbers not available');
+           alert('Line numbers toggle function not available');
+         }
+       }
+
+
+        showNotification(message) {
+          // Create a temporary notification element
+          const notification = document.createElement('div');
+          notification.textContent = message;
+          notification.style.cssText = `
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+          `;
+          
+          document.body.appendChild(notification);
+          
+          // Remove after 2 seconds
+          setTimeout(() => {
+            notification.remove();
+          }, 2000);
+        }
+
+        showNotificationSettings() {
+          const settings = `Notification Settings:
+
+        Current notifications you receive:
+        - User joins/leaves document: Visible in activity log
+        - Document statistics: Live updates in status bar
+        - PromiseGrid messages: Console logging enabled
+
+        Tip: Toggle the activity log with View → Toggle Activity Log
+
+        This is a collaborative editor - most notifications happen in real-time through the interface!`;
+
+          alert(settings);
+        }
+
+        showPreferences() {
+          const docName = document.getElementById('document-name').textContent;
+          const userName = document.getElementById('name-input').value || 'Anonymous';
+          
+          const preferences = `Preferences:
+
+        Current settings:
+        - Document: ${docName}
+        - Your name: ${userName}
+        - Editor: CodeMirror 6 with Automerge collaboration
+        - Storage: IndexedDB for offline sync
+        - Features: WASM text processing, PromiseGrid protocol
+
+        To customize:
+        - Change your name in the user settings panel
+        - Adjust browser zoom for font size (Ctrl + / Ctrl -)
+        - Use browser settings for theme preferences
+
+        Advanced theme support coming in future updates!`;
+
+          alert(preferences);
+        }
+
+
+        showAccessibility() {
+          const features = `Accessibility Features:
+
+        Keyboard Shortcuts:
+        - Ctrl+N - New document
+        - Ctrl+B - Bold text
+        - Ctrl+I - Italic text
+        - Ctrl+U - Underline text
+        - Ctrl+F - Find text
+        - Ctrl+P - Print
+        - Ctrl+Z - Undo
+        - Ctrl+Y - Redo
+        - Ctrl+A - Select all
+        - Ctrl+C - Copy
+        - Ctrl+V - Paste
+        - Ctrl+X - Cut
+        - Ctrl+Shift+C - Word count
+        - Esc - Close menus
+
+        Screen Reader Support:
+        - All buttons have titles
+        - Menus are keyboard navigable
+        - Status information is announced
+
+        High Contrast: Available in browser settings
+        Font Scaling: Use browser zoom (Ctrl + / Ctrl -)`;
+
+          alert(features);
+        }
+
+        // Activity Log Methods
+        toggleActivityLog() {
+          const logPanel = document.getElementById('user-log');
+          console.log('Toggle activity log called, panel:', logPanel);
+          
+          if (logPanel) {
+            const isVisible = logPanel.style.display === 'block';
+            console.log('Current visibility:', isVisible);
+            
+            if (isVisible) {
+              logPanel.style.setProperty('display', 'none', 'important');
+              console.log('Activity log toggled: hidden');
+            } else {
+              logPanel.style.setProperty('display', 'block', 'important');
+              logPanel.style.setProperty('position', 'fixed', 'important');
+              
+              // Load saved position or use default
+              const savedPosition = this.loadLogPosition();
+              logPanel.style.setProperty('top', savedPosition.top, 'important');
+              logPanel.style.setProperty('left', savedPosition.left, 'important');
+              
+              logPanel.style.setProperty('width', '280px', 'important');
+              logPanel.style.setProperty('height', '400px', 'important');
+              const rootStyles = getComputedStyle(document.documentElement);
+              const bg = (rootStyles.getPropertyValue('--user-log-bg') || 'white').trim();
+              const borderColor = (rootStyles.getPropertyValue('--user-log-border') || '#dadce0').trim();
+              const handleBg = (rootStyles.getPropertyValue('--user-log-handle-bg') || '#f8f9fa').trim();
+              const handleText = (rootStyles.getPropertyValue('--user-log-handle-text') || '#3c4043').trim();
+              const handleBorder = (rootStyles.getPropertyValue('--user-log-handle-border') || borderColor).trim();
+              logPanel.style.setProperty('background', bg, 'important');
+              logPanel.style.setProperty('border', `1px solid ${borderColor}`, 'important');
+              logPanel.style.setProperty('borderRadius', '8px', 'important');
+              logPanel.style.setProperty('boxShadow', '0 4px 16px rgba(0,0,0,0.15)', 'important');
+              logPanel.style.setProperty('padding', '0', 'important'); // No padding since we have the drag handle
+              logPanel.style.setProperty('overflowY', 'auto', 'important');
+              logPanel.style.setProperty('zIndex', '9999', 'important');
+
+              const dragHandle = document.getElementById('log-drag-handle');
+              if (dragHandle) {
+                dragHandle.style.setProperty('background', handleBg, 'important');
+                dragHandle.style.setProperty('color', handleText, 'important');
+                dragHandle.style.setProperty('borderBottom', `1px solid ${handleBorder}`, 'important');
+              }
+              
+              if (window.syncActivityLogTheme) {
+                window.syncActivityLogTheme();
+              }
+              
+              console.log('Applied styles with !important, final position:', logPanel.style.top, logPanel.style.left);
+              
+              // Initialize drag functionality
+              this.initializeDragFunctionality(logPanel);
+              
+              console.log('Activity log toggled: shown');
+            }
+          } else {
+            console.error('Could not find user-log element');
+          }
+        }
+
+        // Helper methods
+        getNotificationSettings() {
+          const saved = localStorage.getItem('notification-settings');
+          return saved ? JSON.parse(saved) : {
+            userActivity: true,
+            documentChanges: true,
+            promiseGrid: true
+          };
+        }
+
+        // Drag functionality methods - ADD THESE THREE METHODS HERE
+        initializeDragFunctionality(logPanel) {
+          const dragHandle = document.getElementById('log-drag-handle');
+          let isDragging = false;
+          let startX, startY, startLeft, startTop;
+
+          dragHandle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            logPanel.classList.add('dragging');
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(logPanel.style.left) || 20;
+            startTop = parseInt(logPanel.style.top) || 120;
+            
+            e.preventDefault();
+          });
+
+          document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            let newLeft = startLeft + deltaX;
+            let newTop = startTop + deltaY;
+            
+            // Keep panel within viewport
+            const maxLeft = window.innerWidth - 280;
+            const maxTop = window.innerHeight - 400;
+            
+            newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+            newTop = Math.max(0, Math.min(newTop, maxTop));
+            
+            logPanel.style.left = newLeft + 'px';
+            logPanel.style.top = newTop + 'px';
+          });
+
+          document.addEventListener('mouseup', () => {
+            if (isDragging) {
+              isDragging = false;
+              logPanel.classList.remove('dragging');
+              
+              // Save position
+              this.saveLogPosition({
+                left: logPanel.style.left,
+                top: logPanel.style.top
+              });
+            }
+          });
+        }
+
+        loadLogPosition() {
+          const saved = localStorage.getItem('activity-log-position');
+          if (saved) {
+            return JSON.parse(saved);
+          }
+          return { left: '20px', top: '120px' }; // Default position
+        }
+
+        saveLogPosition(position) {
+          localStorage.setItem('activity-log-position', JSON.stringify(position));
+        }
+       
+    }
+
+    // Initialize when DOM loads
+      document.addEventListener('DOMContentLoaded', () => {
+        new MenuSystem();
+
+        // Bind modal events (moved from inline handlers)
+        const overlay = document.getElementById('modal-overlay');
+        const dialog = document.querySelector('.modal-dialog');
+        const closeButtons = document.querySelectorAll('.modal-close, .modal-button');
+
+        if (overlay) overlay.addEventListener('click', closeModal);
+        if (dialog)  dialog.addEventListener('click', (e) => e.stopPropagation());
+        closeButtons.forEach(btn => btn.addEventListener('click', () => closeModal()));
+      });
+        
+        // Modal System JavaScript Functions 
+    function showModal(title, content) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-content').innerHTML = content;
+      document.getElementById('modal-overlay').classList.add('show');
+      
+      // Prevent body scrolling when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(event) {
+      // Only close if clicking overlay or close button
+      if (event && event.target.closest('.modal-dialog') && !event.target.closest('.modal-close')) {
+        return;
+      }
+      
+      document.getElementById('modal-overlay').classList.remove('show');
+      document.body.style.overflow = 'auto';
+    }
+
+    // ESC key to close modal
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+    function showAboutModal() {
+      const content = `
+        <h3>Collaborative Text Editor</h3>
+        <p><strong>Features:</strong></p>
+        <ul>
+          <li>Real-time collaboration with Automerge CRDTs</li>
+          <li>WASM-powered text processing (Rust)</li>
+          <li>PromiseGrid protocol integration</li>
+          <li>Offline support with automatic sync</li>
+        </ul>
+        <p>Built with Rust, WebAssembly, and JavaScript</p>
+      `;
+      showModal('About Collaborative Editor', content);
+    }
+
+    function showAccessibilityModal() {
+      const content = `
+        <h3>Keyboard Shortcuts</h3>
+        <ul>
+          <li>Ctrl+N - New document</li>
+          <li>Ctrl+B - Bold text</li>
+          <li>Ctrl+F - Find text</li>
+          <li>All buttons are keyboard accessible</li>
+        </ul>
+      `;
+      showModal('Accessibility Features', content);
+    }
+
+    function showPromiseGridModal() {
+      const content = `
+        <h3>PromiseGrid Integration</h3>
+        <p>This editor includes real PromiseGrid protocol support:</p>
+        <ul>
+          <li>Live CBOR message generation</li>
+          <li>Protocol-compliant message structure</li>
+          <li>Official 'grid' tag (0x67726964)</li>
+        </ul>
+        <p>Check the browser console to see PromiseGrid messages!</p>
+      `;
+      showModal('PromiseGrid Integration', content);
+    }
+  </script>
+  <script src="dist/wasm_exec.js"></script>
+  <script type="module" src="/src/main.js"></script>
+  </script>
+  <!-- Modal System Enhancement for Tests -->
+  <script>
+    (() => {
+      // Global modal system utilities for consistency in tests
+      window.modalUtils = {
+        isModalOpen() {
+          return document.querySelector('.modal-overlay.show') !== null;
+        },
+        getCurrentModal() {
+          return document.querySelector('.modal-overlay.show');
+        },
+        closeAllModals() {
+          const modals = document.querySelectorAll('.modal-overlay');
+          modals.forEach(modal => {
+            modal.classList.remove('show');
+            if (modal.parentNode) {
+              modal.parentNode.removeChild(modal);
+            }
+          });
+          document.body.style.overflow = 'auto';
+        }
+      };
+
+      // Enhanced event handling for modals
+      document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal-overlay')) {
+          if (e.target.id === 'preferences-modal' && window.preferencesDialog) {
+            window.preferencesDialog.hide();
+          }
+        }
+      }, true);
+    })();
+  </script>
+
+
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('Service worker registered:', reg.scope))
+        .catch(err => console.warn('Service worker registration failed:', err));
+    }
+  </script>
+    <!-- Modal HTML Structure -->
+    <div id="modal-overlay" class="modal-overlay" data-modal-overlay>
+      <div class="modal-dialog" data-modal-dialog>
+        <div class="modal-header">
+          <h2 id="modal-title" class="modal-title">Dialog Title</h2>
+          <button class="modal-close" data-modal-close>&times;</button>
+        </div>
+        <div id="modal-content" class="modal-content"></div>
+        <div class="modal-footer">
+          <button class="modal-button" data-modal-close>Close</button>
+        </div>
+      </div>
+    </div>
+   <script type="module">
+   // Import GitHub integration
+   import { setupGitHubMenuItems } from './src/github/githubMenuIntegration.js';
+   import { githubService } from './src/github/githubService.js';
+   import { githubDialog } from './src/ui/githubDialog.js';
+   import { githubCommitDialog } from './src/ui/githubCommitDialog.js';
+   import { githubPullDialog } from './src/ui/githubPullDialog.js';
+  
+   // Make them available globally
+   window.githubService = githubService;
+   window.githubDialog = githubDialog;
+   window.githubCommitDialog = githubCommitDialog;
+   window.githubPullDialog = githubPullDialog;
+  
+   // Initialize GitHub integration after DOM is loaded
+   document.addEventListener('DOMContentLoaded', () => {
+    // Wait for menu system to be ready
+    setTimeout(() => {
+      setupGitHubMenuItems();
+      console.log('GitHub integration initialized');
+    }, 1000);
+  });
+ </script>
+</body>
+</html>

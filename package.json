@@ -1,0 +1,34 @@
+{
+  "name": "collab-web-editor",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/main.js",
+    "./sync": "./src/automerge-sync.js",
+    "./binding": "./src/codemirror-binding.js",
+    "./editor": "./src/editor.js"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@collab-editor/awareness": "file:../collab-awareness",
+    "@automerge/automerge": "^2.2.8",
+    "@automerge/automerge-repo": "^2.5.1",
+    "@automerge/automerge-repo-network-websocket": "^2.5.1",
+    "@automerge/automerge-repo-storage-indexeddb": "^2.5.1",
+    "@codemirror/commands": "^6.8.0",
+    "@codemirror/lang-markdown": "^6.3.4",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.37.2",
+    "cbor-x": "^1.6.0",
+    "codemirror": "^6.0.2"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.5.0"
+  }
+}
