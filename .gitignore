@@ -7,3 +7,4 @@ rust-wasm/pkg/
 coverage/
 .env
 .env.local
+.pids/
