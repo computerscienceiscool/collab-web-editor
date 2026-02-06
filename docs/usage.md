@@ -1,11 +1,10 @@
-# @collab-editor/editor Usage Guide
+# collab-web-editor Usage Guide
 
 ## Quick Start
 
 ### 1. Install Dependencies
 
 ```bash
-cd packages/editor
 npm install
 ```
 
@@ -211,8 +210,8 @@ Click the moon/sun icon to toggle dark/light mode. Preference is saved in localS
 ### Embedding the Editor
 
 ```javascript
-import { createEditor, setupEditorWithBinding } from '@collab-editor/editor/editor';
-import { AutomergeSync } from '@collab-editor/editor/sync';
+import { createEditor, setupEditorWithBinding } from 'collab-web-editor/editor';
+import { AutomergeSync } from 'collab-web-editor/sync';
 import { AwarenessClient } from '@collab-editor/awareness';
 
 // Setup sync
@@ -275,11 +274,13 @@ view.dispatch({
 ### "Failed to load Rust WASM"
 
 ```bash
-cd packages/editor/rust-wasm
+cd rust-wasm
 wasm-pack build --target web --out-dir pkg
 ```
 
 ### "Failed to load Grokker WASM"
+
+Go WASM modules (grokker, diff) are optional -- the editor runs without them. If you do want AI commit messages:
 
 ```bash
 make grokker-wasm

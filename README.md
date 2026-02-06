@@ -106,17 +106,19 @@ Works with any client using the same protocols:
 
 ## WASM Modules
 
-| Module | Source | Purpose |
-|--------|--------|---------|
-| Rust WASM | `rust-wasm/` | Compression, formatting, search, PromiseGrid |
-| Go Diff | `dist/diff.wasm` | Side-by-side diff viewer |
-| Go Grokker | `dist/grokker.wasm` | AI commit message generation |
+| Module | Source | Purpose | Required |
+|--------|--------|---------|----------|
+| Rust WASM | `rust-wasm/` | Compression, formatting, search, PromiseGrid | Yes |
+| Go Diff | `dist/diff.wasm` | Side-by-side diff viewer | No |
+| Go Grokker | `dist/grokker.wasm` | AI commit message generation | No |
 
-Build from repo root:
+Go WASM modules are optional -- the editor loads and runs without them. If the `.wasm` files are missing, those features are simply unavailable (no errors).
+
+Build:
 ```bash
 make wasm         # Rust
-make diff-wasm    # Go diff
-make grokker-wasm # Go grokker
+make diff-wasm    # Go diff (optional)
+make grokker-wasm # Go grokker (optional)
 ```
 
 ## Scripts
@@ -136,7 +138,7 @@ npm run preview  # Preview production build
 
 - [@collab-editor/awareness](https://github.com/computerscienceiscool/collab-awareness) - Cursor/presence synchronization
 - [Vimbeam](https://github.com/computerscienceiscool/vimbeam) - Neovim collaborative editing plugin
-- [collab-editor](https://github.com/computerscienceiscool/collab-editor) - Parent project
+- [collab-editor](https://github.com/computerscienceiscool/collab-editor) - Original monorepo (this package was extracted from `packages/editor/`)
 
 ## License
 

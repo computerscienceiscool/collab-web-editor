@@ -1,8 +1,10 @@
-# @collab-editor/editor Architecture
+# collab-web-editor Architecture
 
 ## Overview
 
-`@collab-editor/editor` is a browser-based collaborative text editor built on Automerge CRDTs and CodeMirror 6. It provides real-time multi-user editing with automatic conflict resolution, cursor synchronization, and offline support.
+`collab-web-editor` is a standalone browser-based collaborative text editor built on Automerge CRDTs and CodeMirror 6. It provides real-time multi-user editing with automatic conflict resolution, cursor synchronization, and offline support.
+
+Previously part of the [collab-editor](https://github.com/computerscienceiscool/collab-editor) monorepo (`packages/editor/`), this is now a standalone repository.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -34,7 +36,7 @@
 **Responsibility:** Manage Automerge repository and document synchronization.
 
 ```javascript
-import { AutomergeSync } from '@collab-editor/editor/sync';
+import { AutomergeSync } from 'collab-web-editor/sync';
 
 const sync = new AutomergeSync('ws://localhost:1234');
 sync.connect();
@@ -75,7 +77,7 @@ sync.on('remote-change', ({ doc, patches }) => {
 **Responsibility:** Synchronize CodeMirror state with Automerge document.
 
 ```javascript
-import { AutomergeBinding, isRemoteChange } from '@collab-editor/editor/binding';
+import { AutomergeBinding, isRemoteChange } from 'collab-web-editor/binding';
 
 const binding = new AutomergeBinding(editorView, automergeHandle);
 binding.attach();
@@ -109,7 +111,7 @@ Automerge.splice(doc, ['content'], position, deleteCount, insertText);
 **Responsibility:** Create configured CodeMirror instance.
 
 ```javascript
-import { createEditor, setupEditorWithBinding } from '@collab-editor/editor/editor';
+import { createEditor, setupEditorWithBinding } from 'collab-web-editor/editor';
 
 // Basic editor
 const { view, destroy } = createEditor(element, {
@@ -218,7 +220,7 @@ The awareness system handles cursor positions and user presence separately from 
 import { AwarenessClient } from '@collab-editor/awareness';
 
 const awareness = new AwarenessClient('ws://localhost:1235', {
-  documentId: 'automerge:abc123',  // Scopes users to this document
+  documentId: 'automerge:abc123',  // Must use automerge: prefix for cross-client matching
   name: 'Alice',
   color: '#4ECDC4',
   heartbeatInterval: 30000
@@ -336,7 +338,7 @@ Users see each other's cursors regardless of which client they use.
 ## File Structure
 
 ```
-packages/editor/
+collab-web-editor/
 ├── src/
 │   ├── main.js              # Application entry point
 │   ├── automerge-sync.js    # AutomergeSync class
@@ -426,7 +428,9 @@ Built with `wasm-pack`. Provides:
 cd rust-wasm && wasm-pack build --target web --out-dir pkg
 ```
 
-### Go WASM (dist/)
+### Go WASM (dist/) -- Optional
+
+Go WASM modules load optionally. If the `.wasm` files are missing, the editor runs normally without those features (no errors are thrown).
 
 **Grokker** - AI-powered commit message generation:
 ```bash

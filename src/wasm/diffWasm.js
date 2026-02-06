@@ -91,20 +91,4 @@ export function testDiffWasm() {
   }
 }
 
-// Auto-initialize when this module is imported
-// Gracefully handle failures without crashing
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-      initDiffWasm().catch(() => {
-        console.warn("Diff WASM auto-init failed (non-fatal)");
-      });
-    }, 2000);
-  });
-} else {
-  setTimeout(() => {
-    initDiffWasm().catch(() => {
-      console.warn("Diff WASM auto-init failed (non-fatal)");
-    });
-  }, 2000);
-}
+// Auto-initialization removed - loading is handled by main.js

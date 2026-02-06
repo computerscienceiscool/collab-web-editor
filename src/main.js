@@ -198,20 +198,23 @@ async function initAppInternal() {
     return;
   }
 
-  console.log("Initializing Grokker WASM...");
+  // Go WASM modules are optional - only load if .wasm files are present
   try {
-    await initGrokkerWasm();
+    const grokkerResp = await fetch('dist/grokker.wasm', { method: 'HEAD' });
+    if (grokkerResp.ok && grokkerResp.headers.get('content-type')?.includes('wasm')) {
+      await initGrokkerWasm();
+    }
   } catch (err) {
-    console.error("Failed to initialize Grokker WASM:", err);
-    showErrorBanner("Failed to load Grokker WASM. Try `make grokker-wasm` and reload.");
+    // Grokker WASM not available - AI commit messages disabled
   }
 
-  console.log("Initializing Diff WASM...");
   try {
-    await initDiffWasm();
+    const diffResp = await fetch('dist/diff.wasm', { method: 'HEAD' });
+    if (diffResp.ok && diffResp.headers.get('content-type')?.includes('wasm')) {
+      await initDiffWasm();
+    }
   } catch (err) {
-    console.error("Failed to initialize Diff WASM:", err);
-    showErrorBanner("Failed to load diff engine. Run `make diff-wasm` and reload.");
+    // Diff WASM not available - diff viewer disabled
   }
 
   console.log("All WASM modules ready");
@@ -294,8 +297,10 @@ async function initAppInternal() {
   }
 
   // Create AwarenessClient from package (not custom implementation)
+  // Ensure documentId includes automerge: prefix for cross-client matching
+  const awarenessDocId = documentId.startsWith('automerge:') ? documentId : `automerge:${documentId}`;
   const awareness = new AwarenessClient(config.urls.awareness, {
-    documentId: documentId,
+    documentId: awarenessDocId,
     heartbeatInterval: 30000
   });
   awareness.connect();
