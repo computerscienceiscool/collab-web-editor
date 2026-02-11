@@ -119,7 +119,7 @@ export class AutomergeSync extends EventEmitter {
 
     this.handle = this.repo.create();
 
-    // Initialize document structure (must match vimbeam structure)
+    // Initialize document structure (must match viduct structure)
     this.handle.change(d => {
       d.content = "";
       d.metadata = {

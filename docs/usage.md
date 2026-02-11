@@ -43,11 +43,11 @@ http://localhost:8080/?doc=automerge:4xkP2nRw...
 
 Share the full URL. Anyone with the URL can edit the same document.
 
-### From Neovim (Vimbeam)
+### From Neovim (Viduct)
 
 ```vim
-:VimbeamConnect ws://localhost:1234
-:VimbeamOpen automerge:4xkP2nRw...
+:DuctConnect ws://localhost:1234
+:DuctOpen automerge:4xkP2nRw...
 ```
 
 ## Collaboration Features

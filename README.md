@@ -18,7 +18,7 @@ cd ../collab-awareness && npm start  # Awareness server (port 1235)
 npm run dev               # Opens http://localhost:8080
 ```
 
-Share the URL to collaborate. Works alongside [Vimbeam](https://github.com/computerscienceiscool/vimbeam) for Neovim users.
+Share the URL to collaborate. Works alongside [Viduct](https://github.com/computerscienceiscool/viduct) for Neovim users.
 
 ## Features
 
@@ -96,8 +96,8 @@ Works with any client using the same protocols:
 
 | Component | Protocol | Port | Clients |
 |-----------|----------|------|---------|
-| Document sync | Automerge WebSocket | 1234 | Browser, Vimbeam |
-| Presence | Awareness JSON | 1235 | Browser, Vimbeam |
+| Document sync | Automerge WebSocket | 1234 | Browser, Viduct |
+| Presence | Awareness JSON | 1235 | Browser, Viduct |
 
 **Document structure** (must match across clients):
 ```javascript
@@ -137,7 +137,7 @@ npm run preview  # Preview production build
 ## Related Projects
 
 - [@collab-editor/awareness](https://github.com/computerscienceiscool/collab-awareness) - Cursor/presence synchronization
-- [Vimbeam](https://github.com/computerscienceiscool/vimbeam) - Neovim collaborative editing plugin
+- [Viduct](https://github.com/computerscienceiscool/viduct) - Neovim collaborative editing plugin
 - [collab-editor](https://github.com/computerscienceiscool/collab-editor) - Original monorepo (this package was extracted from `packages/editor/`)
 
 ## License

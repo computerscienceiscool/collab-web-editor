@@ -262,9 +262,9 @@ import { remoteCursorPlugin } from '@collab-editor/awareness';
 extensions.push(...remoteCursorPlugin(cmView, cmState, awareness, localUserId));
 ```
 
-## Integration with Vimbeam
+## Integration with Viduct
 
-[Vimbeam](https://github.com/computerscienceiscool/vimbeam) is a Neovim plugin that connects to the same collaboration infrastructure.
+[Viduct](https://github.com/computerscienceiscool/viduct) is a Neovim plugin that connects to the same collaboration infrastructure.
 
 ### Protocol Compatibility
 
@@ -323,7 +323,7 @@ Both clients send the same awareness message format:
 ```
 ┌──────────────┐     ┌─────────────┐     ┌──────────────┐
 │   Browser    │     │   Servers   │     │    Neovim    │
-│   Editor     │     │             │     │   (Vimbeam)  │
+│   Editor     │     │             │     │   (Viduct)  │
 ├──────────────┤     ├─────────────┤     ├──────────────┤
 │ CodeMirror   │◄───►│ Automerge   │◄───►│ Neovim buffer│
 │              │     │ Sync :1234  │     │              │
