@@ -457,22 +457,23 @@ async function initAppInternal() {
   document.addEventListener("selectionchange", () => {
     if (view.hasFocus) {
       const selection = view.state.selection.main;
-      awareness.setLocalStateField("selection", { anchor: selection.anchor });
+      awareness.setLocalStateField("selection", { anchor: selection.anchor, head: selection.head });
     }
   });
 
   view.dom.addEventListener("mouseup", () => {
     const selection = view.state.selection.main;
-    awareness.setLocalStateField("selection", { anchor: selection.anchor });
+    awareness.setLocalStateField("selection", { anchor: selection.anchor, head: selection.head });
   });
 
   view.dom.addEventListener("keyup", () => {
     const selection = view.state.selection.main;
-    awareness.setLocalStateField("selection", { anchor: selection.anchor });
+    awareness.setLocalStateField("selection", { anchor: selection.anchor, head: selection.head });
   });
 
   // Send initial cursor position so remote clients see us immediately
-  awareness.setLocalStateField("selection", { anchor: view.state.selection.main.anchor });
+  const initSel = view.state.selection.main;
+  awareness.setLocalStateField("selection", { anchor: initSel.anchor, head: initSel.head });
 
   // Log toggle
   const toggleLogBtn = document.getElementById('toggle-log');
