@@ -453,9 +453,12 @@ async function initAppInternal() {
   });
 
   // Track cursor position
-  view.dom.addEventListener("selectionchange", () => {
-    const selection = view.state.selection.main;
-    awareness.setLocalStateField("selection", { anchor: selection.anchor });
+  // selectionchange must be on document (not view.dom) per spec
+  document.addEventListener("selectionchange", () => {
+    if (view.hasFocus) {
+      const selection = view.state.selection.main;
+      awareness.setLocalStateField("selection", { anchor: selection.anchor });
+    }
   });
 
   view.dom.addEventListener("mouseup", () => {
@@ -467,6 +470,9 @@ async function initAppInternal() {
     const selection = view.state.selection.main;
     awareness.setLocalStateField("selection", { anchor: selection.anchor });
   });
+
+  // Send initial cursor position so remote clients see us immediately
+  awareness.setLocalStateField("selection", { anchor: view.state.selection.main.anchor });
 
   // Log toggle
   const toggleLogBtn = document.getElementById('toggle-log');
