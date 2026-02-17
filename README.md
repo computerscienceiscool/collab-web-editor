@@ -10,15 +10,41 @@ Real-time multi-user editing with automatic conflict resolution, cursor synchron
 # 1. Install
 npm install
 
-# 2. Start servers (in separate terminals)
-make ws                    # Automerge sync server (port 1234)
-cd ../collab-awareness && npm start  # Awareness server (port 1235)
+# 2. Build Rust WASM (required)
+make wasm
 
-# 3. Run editor
-npm run dev               # Opens http://localhost:8080
+# 3. Start everything
+make start                # Sync server (1234) + Awareness server (1235) + Web (8080)
 ```
 
-Share the URL to collaborate. Works alongside [Viduct](https://github.com/computerscienceiscool/viduct) for Neovim users.
+Open `http://localhost:8080` and share the URL to collaborate. Works alongside [Viduct](https://github.com/computerscienceiscool/viduct) for Neovim users.
+
+Stop with `make stop`. Check status with `make status`.
+
+## Setup Levels
+
+### Basic (collaborative editing)
+
+All you need for real-time multi-user editing with cursors and presence:
+
+```bash
+npm install
+make wasm                 # Rust WASM (required — editor won't load without it)
+make start                # Starts sync, awareness, and web servers
+```
+
+**What works:** Real-time sync, remote cursors, selections, typing indicators, user presence, markdown editing, 51 keyboard shortcuts, undo/redo, offline persistence, export (txt/md/json/cbor/html/automerge).
+
+### Full (all features)
+
+Add optional Go WASM modules for extra features:
+
+```bash
+make diff-wasm            # Side-by-side diff viewer
+make grokker-wasm         # AI commit message generation
+```
+
+**Extra features:** GitHub integration (direct commits, pull files), AI-generated commit messages, side-by-side diff viewer. These modules are optional — the editor loads and runs without them, and those features simply won't appear.
 
 ## Features
 
@@ -108,18 +134,9 @@ Works with any client using the same protocols:
 
 | Module | Source | Purpose | Required |
 |--------|--------|---------|----------|
-| Rust WASM | `rust-wasm/` | Compression, formatting, search, PromiseGrid | Yes |
+| Rust WASM | `rust-wasm/` | Compression, formatting, search | **Yes** — editor won't load without it |
 | Go Diff | `dist/diff.wasm` | Side-by-side diff viewer | No |
 | Go Grokker | `dist/grokker.wasm` | AI commit message generation | No |
-
-Go WASM modules are optional -- the editor loads and runs without them. If the `.wasm` files are missing, those features are simply unavailable (no errors).
-
-Build:
-```bash
-make wasm         # Rust
-make diff-wasm    # Go diff (optional)
-make grokker-wasm # Go grokker (optional)
-```
 
 ## Scripts
 
