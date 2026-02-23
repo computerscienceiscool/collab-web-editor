@@ -159,4 +159,4 @@ npm run preview  # Preview production build
 
 ## License
 
-MIT
+GPL-3.0-or-later — see [LICENSE](LICENSE)
